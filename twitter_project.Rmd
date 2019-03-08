@@ -37,15 +37,6 @@ setwd("C:\\Users\\baylo\\Twitter Project")
 getwd()
 
 
-#Obtaining the consumer_key, consume_secret, access_token, and access_secret from Twitter API
-access_token <- "1055145980289581059-TGREz8gDxwLaEvauKTdAR1uVxckoAr"
-access_token_secret <- "SLHruAAcHl05JYGJw7kNBtwroRud03AqenRYjG3rRHiTm"
-consumer_key <- "kAIDpjypmdw5Bd4bZgIYuE0G9"
-consumer_secret <- "ASiPgI6OE7a1uKZsGKUEPSVE0axs6G6O7jBql1TCHAOlAm0jmv"
-
-#Setting up Twitter authorization
-setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_token_secret)
-
 ```
 
 
