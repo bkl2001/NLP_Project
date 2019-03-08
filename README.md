@@ -4,8 +4,7 @@ The interactive Shiny application allows users to explore sentiment and emotiona
 
 * By selecting the number of bins in the sentiment histograms, comparing Lyft and Uber tweets;
 * Selecting the the number of words included in the wordclouds, along with the minimun number of frequency of the words;
-* Exploring several different wordclouds:
-      * Unigram, Bigram, Trigram, TF-IDF
+* Exploring several different wordclouds: *Unigram, Bigram, Trigram, TF-IDF*
 * These will allow you to get a better understand of how the people of twitter view Uber and Lyft.
 
 
