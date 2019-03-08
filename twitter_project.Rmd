@@ -27,19 +27,6 @@ setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_token_se
 
 ```
 
-```{r setup, include=FALSE, eval=FALSE}
-
-#Installing Twitter Package
-#install.packages("twitteR")
-
-#Setting Working Directory
-setwd("C:\\Users\\baylo\\Twitter Project")
-getwd()
-
-
-```
-
-
 # Collecting Twitter Data
 ```{r, eval=FALSE}
 
