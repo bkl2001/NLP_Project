@@ -1,0 +1,293 @@
+---
+title: "Twitter Analysis"
+author: "Bayleigh Logan"
+date: "February 11, 2019"
+output: html_document
+runtime: shiny
+---
+
+#Creating Shiny App
+```{r setup, include=FALSE}
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+#install.packages("shinythemes")
+library(shinythemes)
+
+
+png("wordcloud_packages.png", width=12,height=8, units='in', res=800)
+
+#Creating datasets for tweet tab
+driving_companies <- list("Uber", "Lyft")
+
+scores <- list("Uber" = uber_score$n,
+               "Lyft" = lyft_score$n)
+
+#Creating labels for radarchart
+labels <- c("Anger", "Anticipation", "Disgust", "Fear", "Joy", "Sadness", "Surprise", "Trust")
+
+#Creating colors for radarchart
+color <- grDevices::col2rgb(c("royalblue","deeppink2"))
+
+#Creating uber and lyft color system for wordclouds
+ubercols <- colors()[c(563, 566, 490)]
+lyftcols <- colors()[c(369, 370, 645)]
+
+
+#UI of Shiny App
+
+ui <- fluidPage(theme = shinytheme("yeti"),
+                titlePanel(h2(strong("Uber vs. Lyft"))),
+                sidebarLayout(
+                  sidebarPanel(
+                    HTML('<center><img src="test2.png", height = 200, width="280"></center>'),
+                    p("                                             "),
+                    tabsetPanel(
+                      tabPanel("Histogram Parameters",
+                               sliderInput("bins", "Number of Bins:", min=10, max=50, value=30)),
+                      tabPanel("Word Cloud Parameters",
+                               sliderInput("freq","Minimum Frequency:", min = 1, max = 50, value = 5),
+                               sliderInput("max", "Maximum Number of Words:", min = 1, max = 300, value = 200)),
+                      tabPanel("Twitter Data",
+                               selectInput("dataset", "Inspect Tweets:", choices =
+                                             driving_companies))
+                      
+                      
+                    )
+                    
+                    
+                    
+                  ),
+                  mainPanel(
+                    tabsetPanel(
+                      navbarMenu("Sentiment Analysis",
+                                 tabPanel("Histogram",
+                                          plotlyOutput("hist"),
+                                          plotlyOutput("hist1")),
+                                 tabPanel("Positive",
+                                          h4(strong("Uber Positive Word Cloud"), align = "center"),
+                                          plotOutput("pos1"),
+                                          h4(strong("Lyft Positive Word Cloud"), align = "center"),
+                                          plotOutput("pos2")),
+                                 tabPanel("Negative",
+                                          h4(strong("Uber Negative Word Cloud"), align = "center"),
+                                          plotOutput("neg1"),
+                                          h4(strong("Lyft Negative Word Cloud"), align = "center"),
+                                          plotOutput("neg2"))
+                      ),
+                      navbarMenu("Word Clouds",
+                                 tabPanel("Unigram",
+                                          h4(strong("Uber Unigram Word Cloud"), align = "center"),
+                                          plotOutput("wc1"),
+                                          h4(strong("Lyft Unigram Word Cloud"), align = "center"),
+                                          plotOutput("wc2")),
+                                 tabPanel("Bigram",
+                                          h4(strong("Uber Bigram Word Cloud"), align = "center"),
+                                          plotOutput("wc3"),
+                                          h4(strong("Lyft Bigram Word Cloud"), align = "center"),
+                                          plotOutput("wc4")),
+                                 tabPanel("Trigram",
+                                          h4(strong("Uber Trigram Word Cloud"), align = "center"),
+                                          plotOutput("wc5"),
+                                          h4(strong("Lyft Trigram Word Cloud"), align = "center"),
+                                          plotOutput("wc6")),
+                                 tabPanel("TF-IDF",
+                                          h4(strong("Uber TF-IDF Word Cloud"), align = "center"),
+                                          plotOutput("wcTF1"),
+                                          h4(strong("Lyft TF-IDF Word Cloud"), align = "center"),
+                                          plotOutput("wcTF2")),
+                                 tabPanel("Commonality & Comparison",
+                                          h4(strong("Uber and Lyft Commonality Cloud"), align = "center"),
+                                          plotOutput("com1"),
+                                          h4(strong("Uber and Lyft Comparison Cloud"), align = "center"),
+                                          plotOutput("com2"))),
+                      navbarMenu("Emotional Analysis",
+                                 tabPanel("Radar Chart",
+                                          h4(strong("Uber and Lyft Radar Chart"), align = "center"),
+                                          chartJSRadarOutput("rc1", height = 280)),
+                                 tabPanel("Bar Chart",
+                                          plotlyOutput("bc1"),
+                                          plotlyOutput("bc2"))
+                      ),
+                      tabPanel("Tweets",
+                               dataTableOutput("summary")
+                      ),
+                      tabPanel("ReadMe",
+                               htmlOutput("read")
+                               
+                               
+                      )
+                    )
+                    
+                  )
+                )
+)
+
+
+#Server of Shiny App
+server <- function(input, output, session) {
+  
+  datasetInput <- reactive({
+    switch(input$dataset,
+           "Uber" = uber,
+           "Lyft" = lyft)}
+    
+  )
+  
+  getPage<-function() {
+    return(includeHTML("read_me_twitter.html"))
+  }
+  
+  output$read <-renderUI({getPage()})
+  
+  output$hist <- renderPlotly({
+    
+    hist_uber <- ggplot(data = sentiment_summary_uber) +
+      aes(x = review_sentiment) +
+      geom_histogram(bins = input$bins, fill = "#0c4c8a") +
+      labs(title = "Uber Sentiment Analysis using BING Lexicon",
+           x = "Sentiment Score",
+           y = "Frequency") +
+      theme_gray()
+    ggplotly(hist_uber)}
+  )
+  
+  
+  output$pos1 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(uber_pos$column, uber_pos$freq,
+              scale=c(8,1), min.freq = input$freq, max.words = input$max, random.order = FALSE,
+              rot.per = .15, family="Dubai", colors=ubercols)
+  })
+  
+  output$pos2 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(lyft_pos$column, lyft_pos$freq,
+              scale=c(8,1), min.freq = input$freq, max.words = input$max, random.order = FALSE,
+              rot.per = .15, family="Dubai", colors=lyftcols)
+  })
+  
+  output$neg1 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(uber_neg$column, uber_neg$freq,
+              scale=c(6,1), min.freq = input$freq, max.words = input$max, random.order = FALSE,
+              rot.per = .15,  family="Dubai", colors=ubercols)
+  })
+  
+  output$neg2 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(lyft_neg$column, lyft_neg$freq,
+              scale=c(6,.8), min.freq = input$freq, max.words = input$max, random.order = FALSE,
+              rot.per = .15, family="Dubai", colors=lyftcols)
+  })
+  
+  output$hist1 <- renderPlotly({
+    
+    hist_lyft <- ggplot(data = sentiment_summary_lyft) +
+      aes(x = review_sentiment) +
+      geom_histogram(bins = input$bins, fill = "#e7298a") +
+      labs(title = "Lyft Sentiment Analysis using BING Lexicon",
+           x = "Sentiment Score",
+           y = "Frequency") +
+      theme_gray()
+    ggplotly(hist_lyft)}
+  )
+  
+  output$wc1 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(uber_vocab$term, uber_vocab$term_count,
+              scale=c(6,.6),min.freq=input$freq,max.words=input$max, random.order=FALSE,
+              rot.per=.15, family="Dubai", colors=ubercols)}
+  )
+  
+  output$wc2 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(lyft_vocab$term, lyft_vocab$term_count,
+              scale=c(6,.6),min.freq=input$freq,max.words=input$max, random.order=FALSE,
+              rot.per=.15, family="Dubai", colors=lyftcols)}
+  )
+  
+  output$wc3 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(bi_uber_vocab$term, bi_uber_vocab$term_count, scale=c(6,.6),min.freq=input$freq,max.words=input$max, 
+              random.order=FALSE, rot.per =.15, family="Dubai", colors=ubercols)}
+  )
+  
+  output$wc4 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(bi_lyft_vocab$term, bi_lyft_vocab$term_count, scale=c(6,.6),min.freq=input$freq,max.words=input$max, 
+              random.order=FALSE, rot.per =.15, family="Dubai", colors=lyftcols)}
+  )
+  
+  output$wc5 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(tri_uber_vocab$term, tri_uber_vocab$term_count, scale=c(6,.6),min.freq=input$freq,max.words=input$max, 
+              random.order=FALSE, rot.per =.15, family="Dubai", colors=ubercols)}
+  )
+  
+  output$wc6 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(tri_lyft_vocab$term, tri_lyft_vocab$term_count, scale=c(6,.6),min.freq=input$freq,max.words=input$max, 
+              random.order=FALSE, rot.per =.15, family="Dubai", colors=lyftcols)}
+  ) 
+  
+  output$rc1 <- renderChartJSRadar({
+    chartJSRadar(scores = scores, labs = labels, showToolTipLabel=TRUE, colMatrix = color)
+  })
+  
+  output$wcTF1 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(tfidf_freq_uber$words, tfidf_freq_uber$freq, scale=c(6,.6),min.freq=input$freq,max.words=input$max,
+              family="Dubai", colors=ubercols)
+  })
+  
+  output$wcTF2 <- renderPlot({
+    par(mar=rep(0,4))
+    wordcloud(tfidf_freq_lyft$words, tfidf_freq_lyft$freq, scale=c(6,.6),min.freq=input$freq,max.words=input$max,
+              family="Dubai", colors=lyftcols)
+  })
+  
+  output$com1 <- renderPlot({
+    par(mar=rep(0,4))
+    commonality.cloud(TDM_both_m, scale=c(8,.8),colors=brewer.pal(8, "Dark2"),max.words=input$max, random.order=FALSE)}
+  ) 
+  
+  output$com2 <- renderPlot({
+    par(mar=rep(0,4))
+    comparison.cloud(TDM_both_m, scale=c(8,.8), colors=c(Uber="royalblue4",Lyft="hotpink3"),max.words = input$max, random.order=FALSE)}
+  )
+  
+  output$bc1 <- renderPlotly({
+    uber_nrc_plot <- ggplot(data=uber_score,aes(x=sentiment,y=n))+geom_bar(aes(fill=sentiment),stat = "identity")+
+      theme(legend.position="none")+
+      xlab("Sentiments")+ylab("Scores")+ggtitle("Uber Emotional Analysis using NRC Lexicon")
+    ggplotly(uber_nrc_plot)}
+  )
+  
+  output$bc2 <- renderPlotly({
+    lyft_nrc_plot <- ggplot(data=lyft_score,aes(x=sentiment,y=n))+geom_bar(aes(fill=sentiment),stat = "identity")+
+      theme(legend.position="none")+
+      xlab("Sentiments")+ylab("Scores")+ggtitle("Lyft Emotional Analysis using NRC Lexicon")
+    ggplotly(lyft_nrc_plot)}
+  )
+  
+  output$summary <- renderDataTable({
+    select(datasetInput(), c("text"))
+  })
+  
+  
+  
+  
+} 
+
+shinyApp(ui, server)
+
+
+
+
+```
+
+
+
+
