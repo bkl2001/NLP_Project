@@ -1,7 +1,8 @@
 ## Twitter Text Analysis
 #### **Shiny App Description**
 
-[Shiny App - Uber vs. Lyft](https://baylogan.shinyapps.io/NLP_Project/)
+Link to Shiny App: [Twitter - Uber vs. Lyft](https://baylogan.shinyapps.io/NLP_Project/)
+
 The interactive Shiny application allows users to explore sentiment and emotional analyses of Lyft and Uber tweets through wordclouds and graphs. 
 
 
