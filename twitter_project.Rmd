@@ -26,6 +26,9 @@ setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_token_se
 
 
 ```
+To get access to twitter feed of your choice, you must obtain a Twitter API and connect your twitter account to R.
+
+
 
 # Collecting Twitter Data
 ```{r, eval=FALSE}
@@ -52,6 +55,7 @@ write.csv(lyft, file = "Lyft.csv")
 
 
 ```
+Extract the data using "searchTwitter" and then converting to a dataframe for easier use.
 
 # Cleaning the Twitter Data
 ```{r, eval=FALSE}
@@ -79,6 +83,7 @@ write.csv(uber_final, file = "Uber_cleaned.csv")
 write.csv(lyft_final, file = "Lyft_cleaned.csv")
 
 ```
+Extracted out all the tweets that contain both uber and lyft to make the analysis for accurate.
 
 # Starting the Text Analysis
 ```{r, eval=FALSE, message=FALSE, warning=FALSE}
@@ -105,6 +110,7 @@ uber <- read.csv("Uber_cleaned.csv", row.names = 1)
 lyft <- read.csv("Lyft_cleaned.csv", row.names = 1)
 
 ```
+Import all required packages for sentiment and emotional analysis.
 
 ### Creating Word Count and Corpus
 
@@ -129,7 +135,7 @@ content(lyft_corpus[[12]])
 
 
 ```
-
+Doing a simple frequency count of the un-cleaned twitter text and then creating them into corpuses to clean the text.
 
 # Cleaning Courpus - Pre Processing
 ```{r, eval=FALSE}
@@ -167,6 +173,7 @@ print(cleaned_lyft_corpus[[12]][1])
 
 
 ```
+Pre-processing and cleaning the tweets. The cleaning process is unique for the data you have. Here we are removing links, tweet mentions, lowercasing, removing punctuation, removing numbers, removing stop words, removing custom stpop words, and stripping the whitespace.
 
 # TDM
 ```{r, eval=FALSE}
@@ -189,6 +196,7 @@ term_frequency_lyft <- sort(term_frequency_lyft,dec=TRUE)
 
 
 ```
+Turning the corpus into a Term-Document-Matrix. This describes the frequency of the terms within the documents. 
 
 # DTM using Text2Vec
 ```{r, eval=FALSE}
@@ -234,6 +242,7 @@ uber_dtm <- create_dtm(uber_it , uber_vectorizer, type = "dgTMatrix")
 lyft_dtm <- create_dtm(lyft_it , lyft_vectorizer, type = "dgTMatrix")
 
 ```
+"TermDocumentMatrix" can take up a lot of memory, so using a Document-Term-Matrix within Text2Vec is much faster and takes up much less memory. Here we are doing the cleaning process again and transforming it to a DTM.
 
 # TF-IDF (Term Frequency-Inverse Document Frequency)
 ```{r, eval=FALSE}
@@ -257,6 +266,7 @@ tfidf_freq_lyft = data.frame(words=names(sort2),freq=sort2)
 
 
 ```
+TF-IDF is used to weight the frequency of terms within the documents. It shows how important a word is to a document in a colection or corpus.
 
 
 # Creating Bigrams and Trigrams
@@ -278,7 +288,7 @@ bi_lyft_dtm <- create_dtm(bi_lyft_it , bi_lyft_vectorizer, type = "dgTMatrix")
 
 
 ```
-
+Bigrams are used to look at the commonality of two words being used together within the text data.
 
 ### Trigrams:
 ```{r, eval=FALSE}
@@ -296,9 +306,14 @@ tri_uber_dtm <- create_dtm(tri_uber_it , tri_uber_vectorizer, type = "dgTMatrix"
 tri_lyft_dtm <- create_dtm(tri_lyft_it , tri_lyft_vectorizer, type = "dgTMatrix")
 
 ```
+Trigrams look at the commonality of three words being used together.
 
 
 # Word Clouds
+
+Word clouds are a great way to visualize what is within the text. It highlights important textual data and can convey crucial information. The more frequent a word appears the textual data, the bigger and bolder it appears in the word cloud. 
+
+Below are 4 word clouds using traditional unigrams, as well as bigrams, trigrams, and tf-idf that we created earlier on:
 
 ### Unigrams Word Cloud:
 ```{r, eval=FALSE}
@@ -347,6 +362,8 @@ wordcloud(tfidf_freq_lyft$words, tfidf_freq_lyft$freq, scale=c(4,.5),min.freq=5,
 
 
 # Sentiment Analysis - Using "Bing" Lexicon
+
+Sentiment refers to feelings found within the textual data. Here we are using the "bing" lexicon. We are using a sentiment score comparing negative vs. postive. The lower the number the more negative sentiment found. The higher the number the more positive sentiment found. 
 
 ### Uber
 ```{r, eval=FALSE}
@@ -427,6 +444,8 @@ ggplotly(hist_lyft)
 ```
 
 # Emotion Analysis - Using "NRC" Lexicon
+
+Emotion analysis refers to the different types of emotions found within the textual data. Here we are using the "NRC" lexicon. The emotions used are anger, anticipation, disgut, fear, joy, sadness, surprise, and trust.
 
 ### Uber
 ```{r, eval=FALSE}
@@ -528,4 +547,4 @@ comparison.cloud(TDM_both_m,colors=brewer.pal(8, "Dark2"),max.words = 500, rando
 
 
 ```
-
+Lastly, a new corpus was made to create a commonality cloud and comparison cloud. This allows you to visualize the most common words between two different textual dataset.
